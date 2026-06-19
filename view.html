@@ -132,12 +132,12 @@
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
+                            <div id="mini-viewport-${item.id}" onclick="event.stopPropagation(); togglePlayGofile('${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
                                 ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
                             <div class="flex items-center gap-1 flex-shrink-0">
-                                <button id="play-btn-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
+                                <button id="play-btn-${item.id}" onclick="event.stopPropagation(); togglePlayGofile('${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
                                 <a href="${DOWNLOAD_REDIRECT_URL}" target="_blank" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Download">
@@ -174,31 +174,40 @@
             }
         }
 
+        // FUNGSI PLAY & CLOSE YANG SEKARANG SUDAH AMAN DARI BENTROKAN KLIK
         function togglePlayGofile(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
             const fileUrl = videoUrlsCache[id];
 
+            // JIKA SEDANG MAINKAN -> KITA CLOSE (MENGECILKAN KEMBALI JADI THUMBNAIL)
             if (btn.classList.contains('activePlaying')) {
                 btn.classList.remove('activePlaying');
                 btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
+                // Munculkan kembali kotak thumbnail kecil di tengah
                 miniBox.style.setProperty('display', 'block', 'important'); 
+                
+                // Matikan & sembunyikan player video besar di bawah
                 bigPlayerZone.classList.add('hidden'); 
                 bigPlayerZone.innerHTML = ""; 
-            } else {
+            } 
+            // JIKA SEDANG OFF -> KITA PLAY (MELEBARKAN KE BAWAH)
+            else {
                 btn.classList.add('activePlaying');
                 btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
 
+                // Sembunyikan kotak kecil agar layout tombol kanan-kiri merapat rapi
                 miniBox.style.setProperty('display', 'none', 'important'); 
+                
+                // Tampilkan video besar
                 bigPlayerZone.classList.remove('hidden'); 
 
                 if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                    // FIX: Menambahkan controlslist="nodownload" dan proteksi klik kanan (oncontextmenu)
-                    bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlslist="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
+                    bigPlayerZone.innerHTML = `<video controls autoplay playsinline class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
                 } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                     let embed = fileUrl;
                     if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
