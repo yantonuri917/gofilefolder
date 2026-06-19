@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoVid - Tabel Videos List</title>
+    <title>GoVid - Upload Area</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -12,7 +12,7 @@
     <div class="max-w-md w-full bg-gray-800 rounded-xl p-5 shadow-2xl border border-gray-700">
         <div class="text-center mb-5">
             <h1 class="text-2xl font-extrabold text-blue-500 tracking-wide">GoVid Multi</h1>
-            <p class="text-gray-400 text-xs mt-1">Menggunakan tabel videos_list</p>
+            <p class="text-gray-400 text-xs mt-1">Sistem Folder (Packages & Items)</p>
         </div>
 
         <div class="space-y-4 mb-5">
@@ -69,6 +69,7 @@
         const resultLink = document.getElementById('result-link');
         const shareUrlInput = document.getElementById('share-url');
 
+        // Fungsi tambah baris input video di HP
         addMoreBtn.addEventListener('click', () => {
             const newRow = document.createElement('div');
             newRow.className = 'flex gap-2 video-input-row';
@@ -99,32 +100,52 @@
             saveBtn.disabled = true;
             statusContainer.classList.remove('hidden');
             resultLink.classList.add('hidden');
-            statusText.textContent = "Menyimpan ke tabel videos_list...";
+            statusText.textContent = "Sedang membuat folder baru...";
 
             try {
                 const randomSlug = makeRandomSlug(6);
 
-                // Mengirim ke tabel 'videos_list'
-                // Kolom video_urls menerima data berbentuk Array dari javascript []
-                const { error } = await supabase
-                    .from('videos_list')
-                    .insert([{ 
-                        title: folderTitle, 
-                        slug: randomSlug, 
-                        video_urls: videoUrls 
-                    }]);
+                // Langkah 1: Simpan folder utama ke tabel video_packages
+                const { data: packageData, error: packageError } = await supabase
+                    .from('video_packages')
+                    .insert([{ title: folderTitle, slug: randomSlug }])
+                    .select()
+                    .single();
 
-                if (error) {
-                    alert("Supabase Error:\n" + error.message);
-                    throw error;
+                if (packageError) {
+                    alert("Gagal di Tabel video_packages:\n" + packageError.message);
+                    throw packageError;
                 }
 
+                statusText.textContent = `Sedang memasukkan ${videoUrls.length} video...`;
+
+                // Langkah 2: Buat mapping data untuk bulk-insert ke tabel video_items
+                const itemsToInsert = videoUrls.map(url => ({
+                    package_id: packageData.id,
+                    video_url: url
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from('video_items')
+                    .insert(itemsToInsert);
+
+                if (itemsError) {
+                    alert("Gagal di Tabel video_items:\n" + itemsError.message);
+                    throw itemsError;
+                }
+
+                // Sukses! Set tampilan link pendek
                 statusText.textContent = "✓ Link Berhasil Dibuat!";
-                shareUrlInput.value = `${window.location.origin}/${randomSlug}`;
+                
+                const currentUrl = window.location.href;
+                const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                shareUrlInput.value = `${baseUrl}/view.html?v=${randomSlug}`;
+                
                 resultLink.classList.remove('hidden');
 
             } catch (error) {
-                statusText.textContent = "❌ Gagal menyimpan.";
+                console.error(error);
+                statusText.textContent = "❌ Gagal memproses data.";
             } finally {
                 saveBtn.disabled = false;
             }
