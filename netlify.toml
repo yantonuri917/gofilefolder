@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/:slug"
+  to = "/view.html?v=:slug"
+  status = 200
