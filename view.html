@@ -63,7 +63,6 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ROUTING SHORTLINK: Mengambil slug langsung dari path URL bersih sesuai aturan Netlify Redirects Anda
         const videoSlug = window.location.pathname.split('/').filter(Boolean).pop();
 
         const folderTitleDisplay = document.getElementById('folder-title-display');
@@ -75,7 +74,7 @@
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // PROTEKSI KEYBOARD: Memblokir tombol F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, dan Ctrl+U (Mempersulit inspeksi kode/URL database)
+        // PROTEKSI KEYBOARD
         document.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -151,7 +150,6 @@
                     const card = document.createElement('div');
                     card.className = "py-4 flex flex-col w-full";
 
-                    // TATA LETAK: Mengikuti struktur mockup screenshot kiriman Anda secara presisi
                     card.innerHTML = `
                         <div class="flex items-start justify-between w-full gap-3">
                             
@@ -187,7 +185,7 @@
 
                         </div>
 
-                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl"></div>
+                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
@@ -199,7 +197,6 @@
             }
         }
 
-        // SISTEM GENERATOR THUMBNAIL DENGAN DETEKSI ORIENTASI DAN DUKUNGAN EMBED XFREE
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
                 return `<video preload="metadata" muted playsinline oncontextmenu="return false;" class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none select-none"><source src="${url}" type="video/mp4"></video>`;
@@ -209,7 +206,6 @@
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
                 return `<div class="w-full aspect-video"><iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe></div>`;
             } else if (url.includes('xfree.com')) {
-                // Tampilan khusus penanda file embed pihak ketiga XFree pada thumbnail agar ringan dan simetris
                 return `<div class="p-8 flex flex-col items-center gap-1.5 select-none"><i class="fa-solid fa-photo-film text-gray-600 text-xl"></i><span class="text-[9px] text-gray-500 font-medium tracking-wide">XFREE EMBED</span></div>`;
             } else {
                 return `<div class="p-8"><i class="fa-solid fa-video text-gray-700 text-xl"></i></div>`;
@@ -238,7 +234,7 @@
             }
         }
 
-        // PLAYER UTAMA: DENGAN FITUR PROTEKSI NO-DOWNLOAD DAN INTEGRASI PLAYER XFREE
+        // PERBAIKAN UTAMA: Mengatur kontainer iframe agar bisa meregang penuh ke atas (responsif objek) layaknya MP4 asli
         function playVideo(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
@@ -253,7 +249,6 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                // PROTEKSI AMAN: controlsList="nodownload" + penonaktifan menu klik kanan bawaan pemutar video MP4 asli
                 bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${fileUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
@@ -262,8 +257,14 @@
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
                 bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
             } else if (fileUrl.includes('xfree.com')) {
-                // INTEGRASI: Membuka dan memutar langsung konten berkas Iframe dari XFree di dalam zona ekspansi player Anda
-                bigPlayerZone.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full" frameborder="0" allow="fullscreen" allowfullscreen></iframe>`;
+                // MODIFIKASI UKURAN: Menghapus batasan aspect-video (16:9 lanskap) agar kontainer bisa memanjang ke bawah
+                bigPlayerZone.classList.remove('aspect-video');
+                // Berikan tinggi tetap yang optimal (tinggi vertikal seimbang) agar jika video asli adalah potret, ia muat penuh.
+                // Jika video asli lanskap, ia akan otomatis menyesuaikan diri di dalam area hitam (letterbox) yang pas.
+                bigPlayerZone.className = "w-auto mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 h-[70vh] max-h-[520px] shadow-2xl overflow-hidden flex items-center justify-center";
+                
+                // Masukkan iframe dengan style reset penuh agar menyatu sempurna
+                bigPlayerZone.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0 block bg-black" allow="fullscreen; autoplay" allowfullscreen></iframe>`;
             } else {
                 bigPlayerZone.innerHTML = `
                     <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
@@ -287,6 +288,9 @@
 
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
+            
+            // KEMBALIKAN STYLE: Kembalikan class standar bawaan agar layout feed tidak rusak saat player ditutup
+            bigPlayerZone.className = "w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden";
 
             btn.setAttribute('data-status', 'paused');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
@@ -297,20 +301,5 @@
 
         loadGofileFeed();
     </script>
-
-    <!-- Histats -->
-<script type="text/javascript">
-var _Hasync= _Hasync|| [];
-_Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
-_Hasync.push(['Histats.fasi', '1']);
-_Hasync.push(['Histats.track_hits', '']);
-(function() {
-var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-hs.src = ('//s10.histats.com/js15_as.js');
-(document.head || document.body).appendChild(hs);
-})();
-</script>
-<noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif? 4971849&101" alt="counter" border="0"></a></noscript>
-
 </body>
 </html>
