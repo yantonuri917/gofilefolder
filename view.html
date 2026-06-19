@@ -17,9 +17,9 @@
     <div class="w-full max-w-xl mt-4 bg-[#1e293b]/40 p-4 rounded-xl border border-gray-800 flex flex-col gap-1">
         <div class="flex items-center gap-2">
             <span class="text-xl text-yellow-500"><i class="fa-solid fa-folder"></i></span>
-            <h2 id="folder-title-display" class="text-sm font-bold text-gray-200 truncate">Loading folder...</h2>
+            <h2 id="folder-title-display" class="text-sm font-bold text-gray-200 truncate">Memuat folder...</h2>
         </div>
-        <p id="folder-date" class="text-[10px] text-gray-500 pl-7">Menghubungkan...</p>
+        <p id="folder-date" class="text-[10px] text-gray-500 pl-7">Menghubungkan ke server...</p>
         <div class="flex gap-2 mt-1 pl-7">
             <span class="text-[9px] bg-gray-800 text-emerald-400 px-1.5 py-0.5 rounded border border-gray-750 flex items-center gap-1">
                 <i class="fa-solid fa-earth-asia"></i> public
@@ -31,8 +31,8 @@
     </div>
 
     <div id="files-feed-container" class="w-full max-w-xl flex flex-col mt-2">
-        <div class="text-center py-12 text-xs text-yellow-500">
-            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyusun struktur berkas Gofile...
+        <div id="loading-state" class="text-center py-12 text-xs text-yellow-500">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Mengambil data dari Supabase...
         </div>
     </div>
 
@@ -54,16 +54,16 @@
         const fileCountSpan = document.getElementById('file-count');
         const totalItemsFooter = document.getElementById('total-items-footer');
 
-        // Menyimpan data URL mentah untuk diaktifkan saat tombol ditekan
         let videoDataMap = {};
 
         async function loadGofileStyle() {
             if (!videoSlug) {
-                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Missing link parameters (?v=)</p>`;
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Error: Parameter token (?v=) tidak ditemukan di URL.</p>`;
                 return;
             }
 
             try {
+                // 1. Ambil data dari video_packages berdasarkan slug
                 const { data: packageData, error: packageError } = await supabaseClient
                     .from('video_packages')
                     .select('*')
@@ -71,43 +71,55 @@
                     .single();
 
                 if (packageError || !packageData) {
-                    folderTitleDisplay.textContent = "Folder Kosong";
-                    filesFeedContainer.innerHTML = `<p class="text-gray-500 text-xs text-center py-4">Data tidak ditemukan.</p>`;
+                    console.error("Package Error:", packageError);
+                    folderTitleDisplay.textContent = "Folder Tidak Ditemukan";
+                    filesFeedContainer.innerHTML = `<p class="text-gray-400 text-xs text-center py-4">Folder kosong atau token salah.</p>`;
                     return;
                 }
 
                 folderTitleDisplay.textContent = packageData.title;
-                if (packageData.created_at) {
-                    const d = new Date(packageData.created_at);
-                    folderDate.textContent = `${d.toLocaleDateString('id-ID')} • ${d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}`;
-                }
+                const d = packageData.created_at ? new Date(packageData.created_at) : new Date();
+                folderDate.textContent = `${d.toLocaleDateString('id-ID')} ${d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}`;
 
+                // 2. Mengambil data dari video_items menggunakan ID package
+                // Kita buat fleksibel mencakup kolom 'video_url' atau 'url' agar tidak gagal query
                 const { data: itemsData, error: itemsError } = await supabaseClient
                     .from('video_items')
                     .select('*')
                     .eq('package_id', packageData.id);
 
-                if (itemsError || !itemsData || itemsData.length === 0) {
-                    filesFeedContainer.innerHTML = `<p class="text-gray-600 text-xs text-center py-8">Belum ada item video.</p>`;
+                if (itemsError) {
+                    console.error("Items Error:", itemsError);
+                    filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Gagal memuat item video dari database.</p>`;
+                    return;
+                }
+
+                if (!itemsData || itemsData.length === 0) {
+                    filesFeedContainer.innerHTML = `<p class="text-gray-500 text-xs text-center py-8">Folder ini tidak memiliki file video.</p>`;
                     return;
                 }
 
                 fileCountSpan.textContent = `${itemsData.length} items`;
                 totalItemsFooter.textContent = itemsData.length;
-                filesFeedContainer.innerHTML = "";
+                filesFeedContainer.innerHTML = ""; // Bersihkan loading state
 
+                // Tampilkan list file ke halaman
                 itemsData.forEach((item, index) => {
-                    const fullUrl = item.video_url;
-                    videoDataMap[item.id] = fullUrl; // Daftarkan ke memori lokal browser
+                    // Deteksi nama kolom URL secara dinamis agar tidak kosong/null
+                    const fullUrl = item.video_url || item.url || "#";
+                    videoDataMap[item.id] = fullUrl;
 
-                    let fileName = fullUrl.split('/').pop().split('?')[0] || `File_Video_${index + 1}.mp4`;
-                    if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
-                        fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
+                    // Mengambil nama file dari ujung link URL
+                    let fileName = "Video_File_Gofile.mp4";
+                    if (fullUrl && fullUrl !== "#") {
+                        fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
+                        if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
+                            fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
+                        }
                     }
 
-                    // Teks metadata tiruan agar identik dengan tangkapan layar
-                    const fakeSize = ((index + 1) * 44.2 + 12.3).toFixed(1) + " MB";
-                    const fakeDownloads = Math.floor(Math.random() * 350) + (index * 2);
+                    const fakeSize = ((index + 1) * 32.4 + 22.1).toFixed(1) + " MB";
+                    const fakeDownloads = Math.floor(Math.random() * 2500) + 5;
 
                     const card = document.createElement('div');
                     card.className = "gofile-card flex flex-col";
@@ -115,7 +127,7 @@
                     card.innerHTML = `
                         <div class="w-full mb-2 pl-7">
                             <h3 class="text-xs font-semibold text-gray-200 tracking-wide break-all">${fileName}</h3>
-                            <p class="text-[9px] text-gray-500 mt-0.5">${d.toLocaleDateString('id-ID')}, ${d.toLocaleTimeString('id-ID')} • ${fakeSize} • ${fakeDownloads} downloads</p>
+                            <p class="text-[9px] text-gray-500 mt-0.5">${d.toLocaleDateString('id-ID')} • ${fakeSize} • ${fakeDownloads} downloads</p>
                         </div>
 
                         <div class="flex items-center justify-between w-full gap-2">
@@ -124,9 +136,9 @@
                                 <span class="text-blue-500 text-sm"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="media-viewport-${item.id}" class="w-[120px] h-[120px] rounded bg-gray-950 border border-gray-800/80 flex items-center justify-center relative overflow-hidden transition-all duration-300 mx-auto">
-                                <div class="absolute inset-0 flex items-center justify-center bg-gray-900/50">
-                                    <i class="fa-solid fa-images text-gray-700 text-xl"></i>
+                            <div id="media-viewport-${item.id}" class="w-[110px] h-[110px] rounded bg-gray-950 border border-gray-800/80 flex items-center justify-center relative overflow-hidden mx-auto">
+                                <div class="absolute inset-0 flex items-center justify-center bg-gray-900/40">
+                                    <i class="fa-solid fa-video text-gray-700 text-lg"></i>
                                 </div>
                             </div>
 
@@ -150,37 +162,33 @@
                 });
 
             } catch (err) {
-                console.error(err);
+                console.error("System Catch Error:", err);
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Terjadi kesalahan pemrosesan skrip.</p>`;
             }
         }
 
-        // FUNGSI UTAMA INTERAKTIF: Mengatur penukaran status mainkan / ciutkan
         function togglePlayGofile(id) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`media-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-player-zone-${id}`);
             const fileUrl = videoDataMap[id];
 
-            // JIKA SEDANG PLAYING -> MAU KITA CLOSE (Kembali ke mode awal)
             if (btn.classList.contains('isPlaying')) {
                 btn.classList.remove('isPlaying');
-                btn.innerHTML = `<i class="fa-solid fa-play"></i>`; // Kembalikan ke icon segitiga
+                btn.innerHTML = `<i class="fa-solid fa-play"></i>`;
                 btn.className = "w-7 h-7 rounded bg-[#1e293b] text-gray-300 border border-gray-700 flex items-center justify-center text-[10px]";
 
-                miniBox.classList.remove('hidden'); // Munculkan kembali box gambar kecil di tengah
-                bigPlayerZone.classList.add('hidden'); // Sembunyikan player raksasa di bawah
-                bigPlayerZone.innerHTML = ""; // Hapus element video dari memory agar berhenti bunyi
-            } 
-            // JIKA SEDANG MATI -> KITA AKTIFKAN (Sembunyikan box kecil, lebarkan player di bawah)
-            else {
+                miniBox.classList.remove('hidden');
+                bigPlayerZone.classList.add('hidden');
+                bigPlayerZone.innerHTML = "";
+            } else {
                 btn.classList.add('isPlaying');
-                btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; // Ubah jadi icon silang (X)
+                btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
                 btn.className = "w-7 h-7 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-[10px]";
 
-                miniBox.classList.add('hidden'); // Sembunyikan box gambar kecil tengah
-                bigPlayerZone.classList.remove('hidden'); // Tampilkan wadah player lebar penuh di bawah
+                miniBox.classList.add('hidden');
+                bigPlayerZone.classList.remove('hidden');
 
-                // Masukkan sistem video player responsif murni di halaman
                 if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
                     bigPlayerZone.innerHTML = `<video controls autoplay class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
                 } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
@@ -192,8 +200,8 @@
                 } else {
                     bigPlayerZone.innerHTML = `
                         <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4 text-center">
-                            <p class="text-[10px] text-gray-400 mb-2">Tautan Eksternal Cloud</p>
-                            <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1 px-3 rounded font-bold">Buka Tab Pemutar</a>
+                            <p class="text-[10px] text-gray-400 mb-2">Tautan Video Awan / Eksternal</p>
+                            <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1 px-3 rounded font-bold">Buka di Tab Baru</a>
                         </div>`;
                 }
             }
