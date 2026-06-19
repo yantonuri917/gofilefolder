@@ -183,13 +183,15 @@
             }
         }
 
+        // FIX: Memisahkan secara tegas aksi tutup agar tidak digagalkan oleh preventDefault()
         function handleButtonClick(e, id, title) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.stopPropagation(); // Tetap menahan bubbling ke elemen parent card
             const btn = document.getElementById(`play-btn-${id}`);
+            
             if (btn.classList.contains('activePlaying')) {
                 closeVideo(id);
             } else {
+                e.preventDefault(); // Hanya gunakan preventDefault saat mau membuka player link video
                 playVideo(id, title);
             }
         }
@@ -229,13 +231,16 @@
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
 
+            // Hapus penanda aktif putar
             btn.classList.remove('activePlaying');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
+            // Kosongkan dan sembunyikan player video bawah secara bersih
             bigPlayerZone.innerHTML = ""; 
-            bigPlayerZone.classList.add('hidden'); // Memastikan area video benar-benar hilang dari layar
+            bigPlayerZone.classList.add('hidden'); 
             
+            // Kembalikan kotak thumbnail kecil ke tampilan layar asal
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
