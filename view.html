@@ -117,7 +117,6 @@
                     const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
                     const fakeDownloads = Math.floor(Math.random() * (50000 - 1000 + 1)) + 1000;
 
-                    // Pengaturan format tanggal lokal untuk info baris item berkas
                     let itemDateStr = folderDate.textContent;
                     if (item.created_at) {
                         const tglItem = new Date(item.created_at);
@@ -127,7 +126,6 @@
                     const card = document.createElement('div');
                     card.className = "py-4 flex flex-col w-full";
 
-                    // PERBAIKAN STRUKTUR LAYOUT: Disesuaikan presisi dengan gambar screenshot kiriman Anda
                     card.innerHTML = `
                         <div class="flex items-start justify-between w-full gap-3">
                             
@@ -144,7 +142,7 @@
                                     <p class="text-[10px] text-gray-500">${fakeDownloads.toLocaleString('id-ID')} downloads</p>
                                 </div>
 
-                                <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
+                                <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-full max-w-[160px] sm:max-w-[180px] rounded bg-black border border-gray-800/60 flex items-center justify-center relative overflow-hidden cursor-pointer hover:opacity-90 transition-all duration-150" style="display: block;">
                                     ${renderThumbnailPlayer(fullUrl)}
                                 </div>
                             </div>
@@ -175,16 +173,18 @@
             }
         }
 
+        // PERBAIKAN: Menggunakan properti h-auto, aspect-auto, dan object-contain agar video merender dimensinya sendiri secara akurat
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                return `<video preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
+                return `<video preload="metadata" muted playsinline class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
-                return `<iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe>`;
+                // Karena iframe Youtube defaultnya lanskap (16:9), kita kunci rasio aspeknya di sini
+                return `<div class="w-full aspect-video"><iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe></div>`;
             } else {
-                return `<i class="fa-solid fa-video text-gray-700 text-xl"></i>`;
+                return `<div class="p-8"><i class="fa-solid fa-video text-gray-700 text-xl"></i></div>`;
             }
         }
 
