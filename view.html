@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* PROTEKSI UI: Mencegah pengguna memblokir atau menyorot teks/gambar di dalam web */
+        /* PROTEKSI UI: Mencegah pengguna memblok/menyorot teks atau gambar di dalam web */
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -74,7 +74,7 @@
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // PROTEKSI KEYBOARD
+        // PROTEKSI KEYBOARD: Blokir tombol F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, dan Ctrl+U (View Source)
         document.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -134,8 +134,6 @@
                     let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
                     if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
                         fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
-                    } else if (fullUrl.includes('xfree.com')) {
-                        fileName = `XFree_Embed_Stream_${index + 1}.mp4`;
                     }
 
                     const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
@@ -185,7 +183,7 @@
 
                         </div>
 
-                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden"></div>
+                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
@@ -199,14 +197,13 @@
 
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
+                // PROTEKSI: thumbnail video juga diamankan dari interaksi seret/drag & klik kanan
                 return `<video preload="metadata" muted playsinline oncontextmenu="return false;" class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none select-none"><source src="${url}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
                 return `<div class="w-full aspect-video"><iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe></div>`;
-            } else if (url.includes('xfree.com')) {
-                return `<div class="p-8 flex flex-col items-center gap-1.5 select-none"><i class="fa-solid fa-photo-film text-gray-600 text-xl"></i><span class="text-[9px] text-gray-500 font-medium tracking-wide">XFREE EMBED</span></div>`;
             } else {
                 return `<div class="p-8"><i class="fa-solid fa-video text-gray-700 text-xl"></i></div>`;
             }
@@ -234,7 +231,6 @@
             }
         }
 
-        // PERBAIKAN UTAMA: Mengatur kontainer iframe agar bisa meregang penuh ke atas (responsif objek) layaknya MP4 asli
         function playVideo(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
@@ -249,6 +245,7 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
+                // PROTEKSI EXTRA: nodownload + pencegahan klik kanan + pencegahan seret/drag elemen video asli
                 bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${fileUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
@@ -256,15 +253,6 @@
                 if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
                 bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-            } else if (fileUrl.includes('xfree.com')) {
-                // MODIFIKASI UKURAN: Menghapus batasan aspect-video (16:9 lanskap) agar kontainer bisa memanjang ke bawah
-                bigPlayerZone.classList.remove('aspect-video');
-                // Berikan tinggi tetap yang optimal (tinggi vertikal seimbang) agar jika video asli adalah potret, ia muat penuh.
-                // Jika video asli lanskap, ia akan otomatis menyesuaikan diri di dalam area hitam (letterbox) yang pas.
-                bigPlayerZone.className = "w-auto mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 h-[70vh] max-h-[520px] shadow-2xl overflow-hidden flex items-center justify-center";
-                
-                // Masukkan iframe dengan style reset penuh agar menyatu sempurna
-                bigPlayerZone.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0 block bg-black" allow="fullscreen; autoplay" allowfullscreen></iframe>`;
             } else {
                 bigPlayerZone.innerHTML = `
                     <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
@@ -288,9 +276,6 @@
 
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
-            
-            // KEMBALIKAN STYLE: Kembalikan class standar bawaan agar layout feed tidak rusak saat player ditutup
-            bigPlayerZone.className = "w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden";
 
             btn.setAttribute('data-status', 'paused');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
@@ -301,5 +286,20 @@
 
         loadGofileFeed();
     </script>
+
+    <!-- Histats -->
+<script type="text/javascript">
+var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('//s10.histats.com/js15_as.js');
+(document.head || document.body).appendChild(hs);
+})();
+</script>
+<noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif? 4971849&101" alt="counter" border="0"></a></noscript>
+
 </body>
 </html>
