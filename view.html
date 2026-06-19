@@ -137,7 +137,7 @@
                             </div>
 
                             <div class="flex items-center gap-1 flex-shrink-0">
-                                <button type="button" id="play-btn-${item.id}" onclick="handleButtonClick(event, '${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
+                                <button type="button" id="play-btn-${item.id}" data-status="paused" onclick="handleButtonClick(event, '${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
                                 <a href="${DOWNLOAD_REDIRECT_URL}" target="_blank" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Download">
@@ -178,20 +178,20 @@
             e.preventDefault();
             e.stopPropagation();
             const btn = document.getElementById(`play-btn-${id}`);
-            if (!btn.classList.contains('activePlaying')) {
+            if (btn.getAttribute('data-status') !== 'playing') {
                 playVideo(id, title);
             }
         }
 
-        // FIX: Memisahkan secara tegas aksi tutup agar tidak digagalkan oleh preventDefault()
         function handleButtonClick(e, id, title) {
-            e.stopPropagation(); // Tetap menahan bubbling ke elemen parent card
+            e.preventDefault();
+            e.stopPropagation();
             const btn = document.getElementById(`play-btn-${id}`);
+            const currentStatus = btn.getAttribute('data-status');
             
-            if (btn.classList.contains('activePlaying')) {
+            if (currentStatus === 'playing') {
                 closeVideo(id);
             } else {
-                e.preventDefault(); // Hanya gunakan preventDefault saat mau membuka player link video
                 playVideo(id, title);
             }
         }
@@ -202,9 +202,10 @@
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
             const fileUrl = videoUrlsCache[id];
 
-            btn.classList.add('activePlaying');
-            btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
-            btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
+            // Set data status ke playing sebelum merender UI baru
+            btn.setAttribute('data-status', 'playing');
+            btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
+            btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
 
             miniBox.style.setProperty('display', 'none', 'important'); 
             bigPlayerZone.classList.remove('hidden'); 
@@ -231,16 +232,16 @@
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
 
-            // Hapus penanda aktif putar
-            btn.classList.remove('activePlaying');
-            btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
-            btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
-
-            // Kosongkan dan sembunyikan player video bawah secara bersih
+            // Paksa bersihkan konten di dalam iframe/video agar stream benar-benar putus
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
+
+            // Kembalikan tombol ke keadaan semula (Play)
+            btn.setAttribute('data-status', 'paused');
+            btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
+            btn.className = "w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
             
-            // Kembalikan kotak thumbnail kecil ke tampilan layar asal
+            // Tampilkan kembali thumbnail tengah secara instan tanpa delay layouting
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
