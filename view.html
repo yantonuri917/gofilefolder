@@ -74,7 +74,7 @@
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // PROTEKSI KEYBOARD: Blokir tombol F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, dan Ctrl+U (View Source)
+        // PROTEKSI KEYBOARD: Blokir F12, Ctrl+Shift+I/J/C, dan Ctrl+U
         document.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -134,8 +134,6 @@
                     let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
                     if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
                         fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
-                    } else if (fullUrl.includes('xfree.com')) {
-                        fileName = `XFree_Embed_Stream_${index + 1}.mp4`;
                     }
 
                     const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
@@ -185,7 +183,7 @@
 
                         </div>
 
-                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden"></div>
+                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
@@ -199,7 +197,7 @@
 
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                // MODIFIKASI: Mengatur suntikan kode agar cuplikan thumbnail diambil tepat pada detik ke-5 (#t=5)
+                // FITUR: Menyuntikkan waktu spesifik #t=5 agar browser memuat cuplikan gambar pada detik ke-5 (Bisa diubah rasionya sesuai selera)
                 const thumbnailUrl = url.includes('#t=') ? url : `${url}#t=5`;
                 return `<video preload="metadata" muted playsinline oncontextmenu="return false;" class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none select-none"><source src="${thumbnailUrl}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -207,18 +205,6 @@
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
                 return `<div class="w-full aspect-video"><iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe></div>`;
-            } else if (url.includes('xfree.com')) {
-                // MODIFIKASI: Tampilan kartu premium interaktif agar thumbnail XFree tidak hitam kosong
-                return `
-                    <div class="w-full min-h-[90px] py-4 bg-gradient-to-br from-gray-900 to-slate-900 flex flex-col items-center justify-center gap-2 select-none border border-gray-800/40 rounded-sm w-full">
-                        <div class="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-400 text-sm animate-pulse">
-                            <i class="fa-solid fa-clapperboard"></i>
-                        </div>
-                        <div class="text-center">
-                            <span class="text-[9px] text-blue-400 font-bold tracking-wider block uppercase">XFREE STREAM</span>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Click to preview player</span>
-                        </div>
-                    </div>`;
             } else {
                 return `<div class="p-8"><i class="fa-solid fa-video text-gray-700 text-xl"></i></div>`;
             }
@@ -260,6 +246,7 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
+                // KONTROL MP4 ASLI: Mendukung pemutaran responsif (lanskap/potret otomatis) dengan object-contain
                 bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${fileUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
@@ -267,11 +254,6 @@
                 if(embed.includes('youtu.be/')) embed = embed.replace('youtu.be/', 'youtube.com/embed/');
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
                 bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
-            } else if (fileUrl.includes('xfree.com')) {
-                // MODIFIKASI: Menghapus batas aspek tidur agar iframe XFree bisa melebar/memanjang penuh secara adaptif
-                bigPlayerZone.classList.remove('aspect-video');
-                bigPlayerZone.className = "w-auto mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 h-[70vh] max-h-[520px] shadow-2xl overflow-hidden flex items-center justify-center";
-                bigPlayerZone.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0 block bg-black" allow="fullscreen; autoplay" allowfullscreen></iframe>`;
             } else {
                 bigPlayerZone.innerHTML = `
                     <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
@@ -295,9 +277,6 @@
 
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
-            
-            // MODIFIKASI: Mengembalikan class rasio dasar agar struktur feed normal kembali saat ditutup
-            bigPlayerZone.className = "w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl overflow-hidden";
 
             btn.setAttribute('data-status', 'paused');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
