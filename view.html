@@ -11,6 +11,11 @@
 </head>
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6">
 
+    <div class="w-full max-w-md mx-auto mb-1 mt-1 text-center scale-95 opacity-90 overflow-hidden">
+        <script async="async" data-cfasync="false" src="https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js"></script>
+        <div id="container-122b006ae61ef549a738f7e587027d5a"></div>
+    </div>
+
     <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
@@ -57,6 +62,7 @@
         const totalItemsFooter = document.getElementById('total-items-footer');
 
         let videoUrlsCache = {};
+        const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
         async function loadGofileFeed() {
             if (!videoSlug) {
@@ -120,13 +126,13 @@
                             <p class="text-[10px] text-gray-500 mt-0.5">${fakeSize} • ${fakeDownloads.toLocaleString('id-ID')} downloads</p>
                         </div>
 
-                        <div id="control-row-${item.id}" class="flex items-center justify-between w-full gap-2">
+                        <div class="flex items-center justify-between w-full gap-2">
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <input type="checkbox" class="w-3.5 h-3.5 rounded bg-gray-900 border-gray-700 text-blue-600 focus:ring-0 cursor-pointer">
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto">
+                            <div id="mini-viewport-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150">
                                 ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
@@ -134,7 +140,7 @@
                                 <button id="play-btn-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
-                                <a href="${fullUrl}" target="_blank" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Download">
+                                <a href="${DOWNLOAD_REDIRECT_URL}" target="_blank" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Download">
                                     <i class="fa-solid fa-download"></i>
                                 </a>
                                 <button class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-700/80 flex items-center justify-center text-xs">
@@ -155,7 +161,6 @@
             }
         }
 
-        // Render video untuk thumbnail kecil di tengah
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
                 return `<video preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
@@ -169,7 +174,6 @@
             }
         }
 
-        // Transisi Play: Hilangkan kotak kecil, render player utama melebar penuh ke pinggir layar
         function togglePlayGofile(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
@@ -181,7 +185,7 @@
                 btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
-                miniBox.style.display = "flex"; 
+                miniBox.classList.remove('hidden'); 
                 bigPlayerZone.classList.add('hidden'); 
                 bigPlayerZone.innerHTML = ""; 
             } else {
@@ -189,7 +193,7 @@
                 btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
 
-                miniBox.style.display = "none"; 
+                miniBox.classList.add('hidden'); 
                 bigPlayerZone.classList.remove('hidden'); 
 
                 if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
