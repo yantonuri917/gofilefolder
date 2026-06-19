@@ -52,8 +52,8 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoSlug = urlParams.get('v'); 
+        // PERBAIKAN RUTE: Mengambil slug langsung dari path URL bersih sesuai redirect Netlify Anda
+        const videoSlug = window.location.pathname.split('/').filter(Boolean).pop();
 
         const folderTitleDisplay = document.getElementById('folder-title-display');
         const folderDate = document.getElementById('folder-date');
@@ -65,9 +65,9 @@
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
         async function loadGofileFeed() {
-            if (!videoSlug) {
+            if (!videoSlug || videoSlug === 'view.html') {
                 folderTitleDisplay.textContent = "Error: Link Tidak Valid";
-                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Parameter token slug (v) hilang.</p>`;
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Parameter token slug hilang atau tidak valid.</p>`;
                 return;
             }
 
@@ -173,7 +173,6 @@
             }
         }
 
-        // PERBAIKAN: Menggunakan properti h-auto, aspect-auto, dan object-contain agar video merender dimensinya sendiri secara akurat
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
                 return `<video preload="metadata" muted playsinline class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
@@ -181,7 +180,6 @@
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
-                // Karena iframe Youtube defaultnya lanskap (16:9), kita kunci rasio aspeknya di sini
                 return `<div class="w-full aspect-video"><iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe></div>`;
             } else {
                 return `<div class="p-8"><i class="fa-solid fa-video text-gray-700 text-xl"></i></div>`;
@@ -224,7 +222,8 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                bigPlayerZone.innerHTML = `<video controls autoplay playsinline class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
+                // PENAMBAHAN FITUR: controlsList="nodownload" dipasang untuk mematikan tombol download bawaan browser Chrome/HP
+                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
                 if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
