@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-        <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="referrer" content="no-referrer">    <title>Gofile - Folder View</title>
+    <meta name="referrer" content="no-referrer">
+    <title>Gofile - Folder View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6">
 
-    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2">
+    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
             <div class="flex items-start gap-3">
@@ -55,7 +56,6 @@
         const fileCountSpan = document.getElementById('file-count');
         const totalItemsFooter = document.getElementById('total-items-footer');
 
-        // Object penampung URL sementara agar gampang dipanggil saat tombol diklik
         let videoUrlsCache = {};
 
         async function loadGofileFeed() {
@@ -101,7 +101,7 @@
 
                 itemsData.forEach((item, index) => {
                     const fullUrl = item.video_url;
-                    videoUrlsCache[item.id] = fullUrl; // Simpan URL ke memori cache lokal
+                    videoUrlsCache[item.id] = fullUrl; 
                     
                     let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
                     if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
@@ -120,16 +120,14 @@
                             <p class="text-[10px] text-gray-500 mt-0.5">${fakeSize} • ${fakeDownloads.toLocaleString('id-ID')} downloads</p>
                         </div>
 
-                        <div class="flex items-center justify-between w-full gap-2">
+                        <div id="control-row-${item.id}" class="flex items-center justify-between w-full gap-2">
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <input type="checkbox" class="w-3.5 h-3.5 rounded bg-gray-900 border-gray-700 text-blue-600 focus:ring-0 cursor-pointer">
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-gray-950 border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto transition-all duration-200">
-                                <div class="absolute inset-0 flex items-center justify-center bg-gray-900/40">
-                                    <i class="fa-solid fa-images text-gray-700 text-xl"></i>
-                                </div>
+                            <div id="mini-viewport-${item.id}" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto">
+                                ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
                             <div class="flex items-center gap-1 flex-shrink-0">
@@ -145,7 +143,7 @@
                             </div>
                         </div>
 
-                        <div id="expanded-zone-${item.id}" class="w-full hidden mt-3 bg-black rounded-lg overflow-hidden border border-gray-900 aspect-video shadow-inner"></div>
+                        <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl"></div>
                     `;
 
                     filesFeedContainer.appendChild(card);
@@ -157,35 +155,45 @@
             }
         }
 
-        // FUNGSI UTAMA TRANSISI: Menyembunyikan gambar kecil & membuka layar video besar ke bawah
+        // Render video untuk thumbnail kecil di tengah
+        function renderThumbnailPlayer(url) {
+            if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
+                return `<video preload="metadata" muted playsinline class="w-full h-full object-cover pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
+            } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                let embedUrl = url;
+                if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
+                if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
+                return `<iframe src="${embedUrl}" class="w-full h-full pointer-events-none opacity-50" frameborder="0"></iframe>`;
+            } else {
+                return `<i class="fa-solid fa-video text-gray-700 text-xl"></i>`;
+            }
+        }
+
+        // Transisi Play: Hilangkan kotak kecil, render player utama melebar penuh ke pinggir layar
         function togglePlayGofile(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
             const fileUrl = videoUrlsCache[id];
 
-            // KONDISI 1: JIKA VIDEO SEDANG MAIN -> KITA MATIKAN & KEMBALIKAN KE KECIL
             if (btn.classList.contains('activePlaying')) {
                 btn.classList.remove('activePlaying');
-                btn.innerHTML = `<i class="fa-solid fa-play"></i>`; // Kembalikan ke ikon Segitiga Play
+                btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
-                miniBox.classList.remove('hidden'); // Munculkan lagi kotak kecil di tengah
-                bigPlayerZone.classList.add('hidden'); // Sembunyikan layar video besar di bawah
-                bigPlayerZone.innerHTML = ""; // Bersihkan tag video agar stop buffering/suara mati
-            } 
-            // KONDISI 2: JIKA VIDEO SEDANG MATI -> KITA LEBARKAN FULL PREVIEW KE BAWAH
-            else {
+                miniBox.style.display = "flex"; 
+                bigPlayerZone.classList.add('hidden'); 
+                bigPlayerZone.innerHTML = ""; 
+            } else {
                 btn.classList.add('activePlaying');
-                btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; // Ubah jadi ikon Silang (X) untuk menutup
+                btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
 
-                miniBox.classList.add('hidden'); // Sembunyikan kotak gambar kecil di tengah
-                bigPlayerZone.classList.remove('hidden'); // Membuka wadah area lebar penuh di bawah
+                miniBox.style.display = "none"; 
+                bigPlayerZone.classList.remove('hidden'); 
 
-                // Tanam player media responsif orisinal
                 if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                    bigPlayerZone.innerHTML = `<video controls autoplay class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
+                    bigPlayerZone.innerHTML = `<video controls autoplay playsinline class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
                 } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                     let embed = fileUrl;
                     if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
@@ -196,7 +204,7 @@
                     bigPlayerZone.innerHTML = `
                         <div class="w-full h-full flex flex-col items-center justify-center bg-gray-900 p-4">
                             <p class="text-[11px] text-gray-400 mb-2">${title}</p>
-                            <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Link Sumber</a>
+                            <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
                         </div>`;
                 }
             }
