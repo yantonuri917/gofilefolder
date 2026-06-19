@@ -131,7 +131,10 @@
                     const fullUrl = item.video_url;
                     videoUrlsCache[item.id] = fullUrl; 
                     
-                    let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
+                    // Membersihkan nama file dari karakter #t= jika ada di dalam link asli saat upload
+                    let baseCleanUrl = fullUrl.split('#')[0];
+                    let fileName = baseCleanUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
+                    
                     if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
                         fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
                     }
@@ -197,8 +200,10 @@
 
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                // FITUR: Menyuntikkan waktu spesifik #t=5 agar browser memuat cuplikan gambar pada detik ke-5 (Bisa diubah rasionya sesuai selera)
+                // LOGIKA BARU: Jika link video yang diupload sudah ada teks '#t=', gunakan setingan itu. 
+                // Jika tidak ada kode waktu di linknya, otomatis pakai detik ke-5 (#t=5) agar aman.
                 const thumbnailUrl = url.includes('#t=') ? url : `${url}#t=5`;
+                
                 return `<video preload="metadata" muted playsinline oncontextmenu="return false;" class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none select-none"><source src="${thumbnailUrl}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
@@ -246,8 +251,9 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                // KONTROL MP4 ASLI: Mendukung pemutaran responsif (lanskap/potret otomatis) dengan object-contain
-                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${fileUrl}" type="video/mp4"></video>`;
+                // Saat video diputar penuh, kita hapus penanda waktu #t= agar video berputar normal dari awal (detik 0)
+                const playUrl = fileUrl.split('#')[0];
+                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${playUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
                 if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
@@ -287,7 +293,7 @@
 
         loadGofileFeed();
     </script>
-
+    
     <script type="text/javascript">
     var _Hasync= _Hasync|| [];
     _Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
