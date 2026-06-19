@@ -132,7 +132,7 @@
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150">
+                            <div id="mini-viewport-${item.id}" onclick="togglePlayGofile('${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
                                 ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
@@ -185,7 +185,7 @@
                 btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
-                miniBox.classList.remove('hidden'); 
+                miniBox.style.setProperty('display', 'block', 'important'); 
                 bigPlayerZone.classList.add('hidden'); 
                 bigPlayerZone.innerHTML = ""; 
             } else {
@@ -193,11 +193,12 @@
                 btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
                 btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
 
-                miniBox.classList.add('hidden'); 
+                miniBox.style.setProperty('display', 'none', 'important'); 
                 bigPlayerZone.classList.remove('hidden'); 
 
                 if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                    bigPlayerZone.innerHTML = `<video controls autoplay playsinline class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
+                    // FIX: Menambahkan controlslist="nodownload" dan proteksi klik kanan (oncontextmenu)
+                    bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlslist="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
                 } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                     let embed = fileUrl;
                     if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
