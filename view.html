@@ -132,7 +132,7 @@
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
+                            <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150">
                                 ${renderThumbnailPlayer(fullUrl)}
                             </div>
 
@@ -183,15 +183,14 @@
             }
         }
 
-        // FIX: Memisahkan secara tegas aksi tutup agar tidak digagalkan oleh preventDefault()
         function handleButtonClick(e, id, title) {
-            e.stopPropagation(); // Tetap menahan bubbling ke elemen parent card
+            e.stopPropagation(); 
             const btn = document.getElementById(`play-btn-${id}`);
             
             if (btn.classList.contains('activePlaying')) {
                 closeVideo(id);
             } else {
-                e.preventDefault(); // Hanya gunakan preventDefault saat mau membuka player link video
+                e.preventDefault(); 
                 playVideo(id, title);
             }
         }
@@ -206,7 +205,8 @@
             btn.innerHTML = `<i class="fa-solid fa-xmark"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-700 text-white border border-gray-500 flex items-center justify-center text-xs";
 
-            miniBox.style.setProperty('display', 'none', 'important'); 
+            // PERBAIKAN: Gunakan class Tailwind 'hidden' untuk menyembunyikan thumbnail secara bersih
+            miniBox.classList.add('hidden'); 
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
@@ -236,12 +236,12 @@
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
-            // Kosongkan dan sembunyikan player video bawah secara bersih
+            // Kosongkan dan sembunyikan player video besar
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
             
-            // Kembalikan kotak thumbnail kecil ke tampilan layar asal
-            miniBox.style.setProperty('display', 'block', 'important'); 
+            // PERBAIKAN: Munculkan kembali kotak thumbnail kecil dengan menghapus class 'hidden'
+            miniBox.classList.remove('hidden'); 
         }
 
         loadGofileFeed();
