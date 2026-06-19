@@ -3,69 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gofile - View Folder</title>
+    <title>Gofile - Folder View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6">
 
-    <div class="max-w-5xl w-full bg-[#111827] rounded-xl p-4 sm:p-6 shadow-2xl border border-gray-800/60">
+    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2">
         
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800 pb-4 mb-4 gap-2">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl text-yellow-500"><i class="fa-solid fa-folder-open"></i></span>
-                <div>
-                    <h2 id="folder-title-display" class="text-lg font-bold text-gray-100 tracking-wide">Memuat info folder...</h2>
-                    <p id="folder-date" class="text-[11px] text-gray-500">Menghubungkan ke server...</p>
+        <div class="border-b border-gray-800 pb-4 mb-4">
+            <div class="flex items-start gap-3">
+                <span class="text-3xl text-yellow-500 mt-1"><i class="fa-solid fa-folder"></i></span>
+                <div class="min-w-0 flex-1">
+                    <h2 id="folder-title-display" class="text-base font-bold text-gray-100 tracking-wide truncate">Memuat info folder...</h2>
+                    <p id="folder-date" class="text-[11px] text-gray-500 mt-0.5">Menghubungkan...</p>
+                    <div class="flex gap-2 mt-2">
+                        <span class="text-[10px] bg-gray-800/80 text-emerald-400 px-2 py-0.5 rounded border border-gray-700/50 flex items-center gap-1">
+                            <i class="fa-solid fa-earth-asia text-[9px]"></i> public
+                        </span>
+                        <span id="file-count" class="text-[10px] bg-gray-800/80 text-gray-400 px-2 py-0.5 rounded border border-gray-700/50">
+                            0 items
+                        </span>
+                    </div>
                 </div>
-            </div>
-            <div class="text-xs bg-gray-800/40 px-3 py-1.5 rounded-lg border border-gray-700/50 text-gray-400 self-start sm:self-center">
-                <i class="fa-solid fa-lock text-emerald-500 mr-1"></i> Public Access
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            
-            <div class="lg:col-span-2 space-y-3">
-                <div id="player-container" class="w-full aspect-video bg-black rounded-xl overflow-hidden flex flex-col items-center justify-center border border-gray-800/80 shadow-inner">
-                    <span class="text-3xl text-gray-600 mb-2"><i class="fa-solid fa-circle-play animate-pulse"></i></span>
-                    <p id="player-status" class="text-gray-500 text-xs">Pilih salah satu file video di daftar untuk mulai memutar</p>
-                </div>
-                
-                <div class="flex justify-between items-center bg-[#1f2937]/30 p-3 rounded-xl border border-gray-800">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-blue-400"><i class="fa-solid fa-circle-info"></i></span>
-                        <span id="current-playing-title" class="text-xs text-gray-400 truncate max-w-[180px] sm:max-w-md">Tidak ada video yang diputar</span>
-                    </div>
-                    <a id="direct-download-btn" href="#" target="_blank" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-4 rounded-lg text-xs transition-all flex items-center gap-1.5">
-                        <i class="fa-solid fa-download"></i> Download
-                    </a>
-                </div>
-            </div>
+        <div class="flex items-center gap-1.5 mb-4 bg-[#1f2937]/20 p-1.5 rounded-lg border border-gray-800/50">
+            <button class="bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 transition-all">
+                <i class="fa-solid fa-share-nodes"></i> Share
+            </button>
+            <button class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 transition-all">
+                <i class="fa-solid fa-folder-plus"></i> Sub-folder
+            </button>
+        </div>
 
-            <div class="bg-[#0b0f19]/60 p-3 rounded-xl border border-gray-800/80 flex flex-col h-[350px] lg:h-[420px]">
-                <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-2">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider"><i class="fa-solid fa-list-ul mr-1"></i> Files List</h3>
-                    <span id="file-count" class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-gray-400">0 Files</span>
-                </div>
-                
-                <div id="playlist-container" class="space-y-1 overflow-y-auto flex-1 pr-1 custom-scrollbar">
-                    <div class="text-center py-8 text-xs text-yellow-500 animate-pulse">
-                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat daftar file Gofile...
-                    </div>
-                </div>
+        <div id="files-feed-container" class="space-y-4">
+            <div class="text-center py-12 text-xs text-yellow-500 animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat isi berkas Gofile...
             </div>
+        </div>
 
+        <div class="mt-8 pt-4 border-t border-gray-800 text-center text-[10px] text-gray-600 tracking-wide">
+            Showing 1000 items per page • Total <span id="total-items-footer">0</span> items
         </div>
     </div>
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #374151; }
-    </style>
 
     <script>
         const SUPABASE_URL = "https://ehhrvswzhirrnrqxmxae.supabase.co"; 
@@ -77,21 +60,19 @@
 
         const folderTitleDisplay = document.getElementById('folder-title-display');
         const folderDate = document.getElementById('folder-date');
-        const playerContainer = document.getElementById('player-container');
-        const playlistContainer = document.getElementById('playlist-container');
-        const directDownloadBtn = document.getElementById('direct-download-btn');
-        const currentPlayingTitle = document.getElementById('current-playing-title');
+        const filesFeedContainer = document.getElementById('files-feed-container');
         const fileCountSpan = document.getElementById('file-count');
+        const totalItemsFooter = document.getElementById('total-items-footer');
 
-        async function loadGofileStyle() {
+        async function loadGofileFeed() {
             if (!videoSlug) {
-                folderTitleDisplay.textContent = "Error: Invalid Link";
-                playlistContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Parameter slug kosong.</p>`;
+                folderTitleDisplay.textContent = "Error: Link Tidak Valid";
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Parameter token slug (v) hilang.</p>`;
                 return;
             }
 
             try {
-                // 1. Ambil data folder paket
+                // 1. Dapatkan info folder induk dari video_packages
                 const { data: packageData, error: packageError } = await supabaseClient
                     .from('video_packages')
                     .select('*')
@@ -100,108 +81,114 @@
 
                 if (packageError || !packageData) {
                     folderTitleDisplay.textContent = "Folder Not Found";
-                    playlistContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Koleksi tidak ditemukan.</p>`;
+                    filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Sistem tidak menemukan folder tersebut.</p>`;
                     return;
                 }
 
                 folderTitleDisplay.textContent = packageData.title;
                 if (packageData.created_at) {
-                    const opsiTanggal = { year: 'numeric', month: 'long', day: 'numeric' };
-                    folderDate.textContent = `Dibuat pada: ${new Date(packageData.created_at).toLocaleDateString('id-ID', opsiTanggal)}`;
+                    const tanggal = new Date(packageData.created_at);
+                    folderDate.textContent = `${tanggal.toLocaleDateString('id-ID')}, ${tanggal.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}`;
                 }
 
-                // 2. Ambil isi file video di dalam folder ini
+                // 2. Tarik daftar item video dari video_items
                 const { data: itemsData, error: itemsError } = await supabaseClient
                     .from('video_items')
                     .select('*')
                     .eq('package_id', packageData.id);
 
                 if (itemsError || !itemsData || itemsData.length === 0) {
-                    playlistContainer.innerHTML = `<p class="text-gray-500 text-xs text-center py-4">Folder ini kosong.</p>`;
-                    fileCountSpan.textContent = "0 Files";
+                    filesFeedContainer.innerHTML = `<p class="text-gray-500 text-xs text-center py-8">Folder kosong (Belum ada file diunggah).</p>`;
                     return;
                 }
 
-                fileCountSpan.textContent = `${itemsData.length} Files`;
-                playlistContainer.innerHTML = "";
+                // Sinkronisasi status jumlah file
+                const totalFiles = itemsData.length;
+                fileCountSpan.textContent = `Total ${totalFiles} items`;
+                totalItemsFooter.textContent = totalFiles;
+                filesFeedContainer.innerHTML = "";
 
-                // Buat struktur baris file mirip tabel Gofile asli
+                // Buat struktur layout feed item satu per satu
                 itemsData.forEach((item, index) => {
-                    let fullUrl = item.video_url;
-                    let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
+                    const fullUrl = item.video_url;
                     
-                    // Filter penamaan jika link berasal dari YouTube
+                    // Ekstrak string akhir url sebagai nama file asli
+                    let fileName = fullUrl.split('/').pop().split('?')[0] || `Video_File_${index + 1}.mp4`;
                     if (fullUrl.includes('youtube.com') || fullUrl.includes('youtu.be')) {
                         fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
                     }
-                    
-                    // Potong nama file jika kepanjangan agar tidak merusak layout HP
-                    let shortName = fileName.length > 28 ? fileName.substring(0, 25) + "..." : fileName;
 
-                    // Mengacak ukuran file tiruan agar menyerupai gofile asli (opsional visual saja)
-                    let fakeSize = ((index + 3) * 14.5).toFixed(1) + " MB";
+                    // Manipulasi visual data statis biar mirip persis screenshot gofile asli
+                    const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
+                    const fakeDownloads = Math.floor(Math.random() * (50000 - 1000 + 1)) + 1000;
 
-                    // Pembuatan elemen baris file list
-                    const fileRow = document.createElement('div');
-                    fileRow.className = "group flex items-center justify-between p-2.5 bg-[#111827]/80 hover:bg-[#1f2937] rounded-lg border border-gray-800 hover:border-gray-700/80 cursor-pointer transition-all gap-2";
-                    
-                    fileRow.innerHTML = `
-                        <div class="flex items-center gap-2.5 min-w-0 flex-1" onclick="playVideo('${fullUrl}', '${fileName}')">
-                            <span class="text-blue-400 text-sm flex-shrink-0"><i class="fa-solid fa-file-video"></i></span>
+                    // Bikin elemen kartu file
+                    const card = document.createElement('div');
+                    card.className = "bg-[#111827] border border-gray-800/80 rounded-xl p-3 flex flex-col gap-3 relative shadow-md";
+
+                    // Bagian isi konten dalam kartu
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0 flex-1">
-                                <p class="text-xs font-medium text-gray-300 group-hover:text-blue-400 truncate">${shortName}</p>
-                                <p class="text-[10px] text-gray-500">${fakeSize}</p>
+                                <h3 class="text-sm font-semibold text-gray-200 tracking-wide break-words cursor-pointer hover:text-blue-400 transition-all">${fileName}</h3>
+                                <p class="text-[10px] text-gray-500 mt-0.5">${fakeSize} • ${fakeDownloads.toLocaleString('id-ID')} downloads</p>
                             </div>
+                            <input type="checkbox" class="w-3.5 h-3.5 rounded bg-gray-800 border-gray-700 text-blue-600 focus:ring-0 mt-1 cursor-pointer">
                         </div>
-                        <div class="flex items-center gap-1">
-                            <a href="${fullUrl}" target="_blank" class="p-1 px-2 text-[11px] text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-800 rounded border border-gray-700/40" title="Link Sumber">
-                                <i class="fa-solid fa-link"></i>
+
+                        <div class="w-full rounded-lg overflow-hidden bg-black aspect-video border border-gray-900 shadow-inner relative group">
+                            <div class="absolute left-2 top-2 z-10 bg-blue-600/90 text-white text-[10px] p-1 px-1.5 rounded-md flex items-center justify-center border border-blue-500/30">
+                                <i class="fa-solid fa-file-video"></i>
+                            </div>
+                            
+                            ${renderMiniPlayer(fullUrl)}
+                        </div>
+
+                        <div class="flex items-center justify-end gap-1.5 border-t border-gray-800/50 pt-2.5">
+                            <button onclick="window.open('${fullUrl}', '_blank')" class="bg-gray-800 hover:bg-gray-700/80 text-gray-300 text-[11px] p-1.5 px-3 rounded-md border border-gray-700/40 font-medium flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-play text-gray-400"></i> Play
+                            </button>
+                            <a href="${fullUrl}" target="_blank" class="bg-gray-800 hover:bg-gray-700/80 text-gray-300 text-[11px] p-1.5 px-3 rounded-md border border-gray-700/40 font-medium flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-download text-gray-400"></i> Download
                             </a>
+                            <button class="bg-gray-800 hover:bg-gray-700/80 text-gray-300 text-[11px] p-1.5 px-2 rounded-md border border-gray-700/40 transition-all">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
                         </div>
                     `;
-                    
-                    playlistContainer.appendChild(fileRow);
-                });
 
-                // Putar video pertama otomatis saat loading pertama selesai
-                let firstFileName = itemsData[0].video_url.split('/').pop().split('?')[0] || "Video 1";
-                if (itemsData[0].video_url.includes('youtube.com') || itemsData[0].video_url.includes('youtu.be')) {
-                    firstFileName = "YouTube Stream Part 1";
-                }
-                playVideo(itemsData[0].video_url, firstFileName);
+                    filesFeedContainer.appendChild(card);
+                });
 
             } catch (err) {
                 console.error(err);
-                folderTitleDisplay.textContent = "Koneksi Gagal";
-                playlistContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Gagal memproses folder.</p>`;
+                folderTitleDisplay.textContent = "Error Jaringan";
+                filesFeedContainer.innerHTML = `<p class="text-red-400 text-xs text-center py-4">Gagal terhubung dengan server database.</p>`;
             }
         }
 
-        function playVideo(url, title) {
-            directDownloadBtn.href = url;
-            directDownloadBtn.classList.remove('hidden');
-            currentPlayingTitle.textContent = title;
-
-            // Cek apakah tipenya mp4 langsung atau stream embed
+        // Generator Elemen Media sesuai format link asal
+        function renderMiniPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                playerContainer.innerHTML = `<video controls autoplay class="w-full h-full object-contain"><source src="${url}" type="video/mp4"></video>`;
+                return `<video controls preload="metadata" class="w-full h-full object-contain"><source src="${url}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
                 if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
-                embedUrl += embedUrl.includes('?') ? "&autoplay=1" : "?autoplay=1";
-                
-                playerContainer.innerHTML = `<iframe src="${embedUrl}" class="w-full h-full" allow="autoplay" allowfullscreen frameborder="0"></iframe>`;
+                return `<iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>`;
             } else {
-                playerContainer.innerHTML = `
-                    <div class="text-center p-4">
-                        <p class="text-xs text-gray-400 mb-2">Stream Eksternal: ${title}</p>
-                        <a href="${url}" target="_blank" class="bg-blue-600 px-4 py-2 rounded-lg font-bold text-xs inline-block text-white transition-all hover:bg-blue-700">Putar di Tab Baru <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></a>
+                // Tampilan link pihak ketiga biasa
+                return `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/40 p-4">
+                        <span class="text-xl text-gray-500 mb-1"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                        <p class="text-[10px] text-gray-400 text-center">Stream Eksternal / File Awan</p>
+                        <a href="${url}" target="_blank" class="mt-2 bg-blue-600 text-white text-[10px] font-bold py-1 px-2.5 rounded hover:bg-blue-700 transition-all">Buka Tautan</a>
                     </div>`;
             }
         }
 
-        loadGofileStyle();
+        // Trigger jalankan fungsi utama
+        loadGofileFeed();
     </script>
 </body>
 </html>
