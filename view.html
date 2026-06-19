@@ -4,12 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
+    <meta http-equiv="X-Frame-Options" content="DENY">
     <title>Gofile - Folder View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* PROTEKSI UI: Mencegah pengguna memblok/menyorot teks atau gambar di dalam web */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6">
+<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6" oncontextmenu="return false;">
 
     <div class="w-full max-w-md mx-auto mb-1 mt-1 text-center scale-95 opacity-90 overflow-hidden">
         <script async="async" data-cfasync="false" src="https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js"></script>
@@ -52,7 +63,6 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // PERBAIKAN RUTE: Mengambil slug langsung dari path URL bersih sesuai redirect Netlify Anda
         const videoSlug = window.location.pathname.split('/').filter(Boolean).pop();
 
         const folderTitleDisplay = document.getElementById('folder-title-display');
@@ -63,6 +73,18 @@
 
         let videoUrlsCache = {};
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
+
+        // PROTEKSI KEYBOARD: Blokir tombol F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, dan Ctrl+U (View Source)
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+                (e.ctrlKey && e.key === 'u')
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
 
         async function loadGofileFeed() {
             if (!videoSlug || videoSlug === 'view.html') {
@@ -175,7 +197,8 @@
 
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
-                return `<video preload="metadata" muted playsinline class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none"><source src="${url}" type="video/mp4"></video>`;
+                // PROTEKSI: thumbnail video juga diamankan dari interaksi seret/drag & klik kanan
+                return `<video preload="metadata" muted playsinline oncontextmenu="return false;" class="w-full h-auto max-h-[240px] aspect-auto object-contain pointer-events-none select-none"><source src="${url}" type="video/mp4"></video>`;
             } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 let embedUrl = url;
                 if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
@@ -222,8 +245,8 @@
             bigPlayerZone.classList.remove('hidden'); 
 
             if (fileUrl.match(/\.(mp4|webm|ogg)/i) || fileUrl.includes('supabase.co/storage')) {
-                // PENAMBAHAN FITUR: controlsList="nodownload" dipasang untuk mematikan tombol download bawaan browser Chrome/HP
-                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain"><source src="${fileUrl}" type="video/mp4"></video>`;
+                // PROTEKSI EXTRA: nodownload + pencegahan klik kanan + pencegahan seret/drag elemen video asli
+                bigPlayerZone.innerHTML = `<video controls autoplay playsinline controlsList="nodownload" oncontextmenu="return false;" class="w-full h-full object-contain select-none"><source src="${fileUrl}" type="video/mp4"></video>`;
             } else if (fileUrl.includes('youtube.com') || fileUrl.includes('youtu.be')) {
                 let embed = fileUrl;
                 if(embed.includes('watch?v=')) embed = embed.replace('watch?v=', 'embed/');
