@@ -137,13 +137,13 @@
                             </div>
 
                             <div class="flex items-center gap-1 flex-shrink-0">
-                                <button id="play-btn-${item.id}" onclick="handleButtonClick(event, '${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
+                                <button type="button" id="play-btn-${item.id}" onclick="handleButtonClick(event, '${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
                                 <a href="${DOWNLOAD_REDIRECT_URL}" target="_blank" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Download">
                                     <i class="fa-solid fa-download"></i>
                                 </a>
-                                <button class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-700/80 flex items-center justify-center text-xs">
+                                <button type="button" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 border border-gray-700/80 flex items-center justify-center text-xs">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
                             </div>
@@ -174,7 +174,6 @@
             }
         }
 
-        // Fungsi khusus menghandle klik pada Thumbnail (Hanya untuk memutar)
         function handleThumbnailClick(e, id, title) {
             e.preventDefault();
             e.stopPropagation();
@@ -184,7 +183,6 @@
             }
         }
 
-        // Fungsi khusus menghandle klik tombol aksi kanan (Bisa memutar maupun menutup)
         function handleButtonClick(e, id, title) {
             e.preventDefault();
             e.stopPropagation();
@@ -196,7 +194,6 @@
             }
         }
 
-        // Eksekusi Rapi: Membuka Player Video
         function playVideo(id, title) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
@@ -227,7 +224,6 @@
             }
         }
 
-        // Eksekusi Rapi: Menutup Video dan Mengembalikan Thumbnail Tanpa Tabrakan Event
         function closeVideo(id) {
             const btn = document.getElementById(`play-btn-${id}`);
             const miniBox = document.getElementById(`mini-viewport-${id}`);
@@ -238,9 +234,8 @@
             btn.className = "w-8 h-8 rounded bg-gray-800 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
 
             bigPlayerZone.innerHTML = ""; 
-            bigPlayerZone.classList.add('hidden'); 
+            bigPlayerZone.classList.add('hidden'); // Memastikan area video benar-benar hilang dari layar
             
-            // Pengembalian display block thumbnail dipastikan berjalan lancar
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
