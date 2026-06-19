@@ -202,7 +202,6 @@
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
             const fileUrl = videoUrlsCache[id];
 
-            // Set data status ke playing sebelum merender UI baru
             btn.setAttribute('data-status', 'playing');
             btn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`; 
             btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
@@ -225,6 +224,14 @@
                         <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
                     </div>`;
             }
+
+            // FITUR GESER OTOMATIS: Player langsung digeser ke tengah layar hp / monitor pengunjung
+            setTimeout(() => {
+                bigPlayerZone.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 150);
         }
 
         function closeVideo(id) {
@@ -232,16 +239,13 @@
             const miniBox = document.getElementById(`mini-viewport-${id}`);
             const bigPlayerZone = document.getElementById(`expanded-zone-${id}`);
 
-            // Paksa bersihkan konten di dalam iframe/video agar stream benar-benar putus
             bigPlayerZone.innerHTML = ""; 
             bigPlayerZone.classList.add('hidden'); 
 
-            // Kembalikan tombol ke keadaan semula (Play)
             btn.setAttribute('data-status', 'paused');
             btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
             
-            // Tampilkan kembali thumbnail tengah secara instan tanpa delay layouting
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
