@@ -117,26 +117,39 @@
                     const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
                     const fakeDownloads = Math.floor(Math.random() * (50000 - 1000 + 1)) + 1000;
 
+                    // Pengaturan format tanggal lokal untuk info baris item berkas
+                    let itemDateStr = folderDate.textContent;
+                    if (item.created_at) {
+                        const tglItem = new Date(item.created_at);
+                        itemDateStr = `${tglItem.getDate()}/${tglItem.getMonth()+1}/${tglItem.getFullYear()}, ${tglItem.getHours().toString().padStart(2, '0')}.${tglItem.getMinutes().toString().padStart(2, '0')}.${tglItem.getSeconds().toString().padStart(2, '0')}`;
+                    }
+
                     const card = document.createElement('div');
-                    card.className = "py-4 flex flex-col";
+                    card.className = "py-4 flex flex-col w-full";
 
+                    // PERBAIKAN STRUKTUR LAYOUT: Disesuaikan presisi dengan gambar screenshot kiriman Anda
                     card.innerHTML = `
-                        <div class="w-full mb-2 pl-7">
-                            <h3 class="text-xs font-semibold text-gray-200 tracking-wide break-all">${fileName}</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">${fakeSize} • ${fakeDownloads.toLocaleString('id-ID')} downloads</p>
-                        </div>
-
-                        <div class="flex items-center justify-between w-full gap-2">
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="flex items-start justify-between w-full gap-3">
+                            
+                            <div class="flex items-center gap-2 flex-shrink-0 mt-1">
                                 <input type="checkbox" class="w-3.5 h-3.5 rounded bg-gray-900 border-gray-700 text-blue-600 focus:ring-0 cursor-pointer">
                                 <span class="text-blue-500 text-base"><i class="fa-solid fa-file-video"></i></span>
                             </div>
 
-                            <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[110px] h-[110px] sm:w-[120px] sm:h-[120px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden mx-auto cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
-                                ${renderThumbnailPlayer(fullUrl)}
+                            <div class="flex-1 min-w-0 flex flex-col">
+                                <div class="mb-3">
+                                    <h3 class="text-xs font-semibold text-gray-200 tracking-wide break-all line-clamp-1">${fileName}</h3>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">${itemDateStr}</p>
+                                    <p class="text-[10px] text-gray-500">${fakeSize}</p>
+                                    <p class="text-[10px] text-gray-500">${fakeDownloads.toLocaleString('id-ID')} downloads</p>
+                                </div>
+
+                                <div id="mini-viewport-${item.id}" onclick="handleThumbnailClick(event, '${item.id}', '${fileName}')" class="w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] rounded bg-black border border-gray-800 flex items-center justify-center relative overflow-hidden cursor-pointer hover:opacity-80 transition-all duration-150" style="display: block;">
+                                    ${renderThumbnailPlayer(fullUrl)}
+                                </div>
                             </div>
 
-                            <div class="flex items-center gap-1 flex-shrink-0">
+                            <div class="flex items-center gap-1.5 flex-shrink-0 mt-1">
                                 <button type="button" id="play-btn-${item.id}" data-status="paused" onclick="handleButtonClick(event, '${item.id}', '${fileName}')" class="w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs" title="Play Video">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
@@ -147,6 +160,7 @@
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
                             </div>
+
                         </div>
 
                         <div id="expanded-zone-${item.id}" class="w-auto hidden mt-3 bg-black -mx-4 sm:-mx-5 border-y border-gray-800 aspect-video shadow-2xl"></div>
@@ -225,7 +239,6 @@
                     </div>`;
             }
 
-            // FITUR GESER OTOMATIS: Player langsung digeser ke tengah layar hp / monitor pengunjung
             setTimeout(() => {
                 bigPlayerZone.scrollIntoView({
                     behavior: 'smooth',
