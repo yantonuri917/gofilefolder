@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoVid - Multi Video Link Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
@@ -24,6 +24,7 @@
             
             <div class="border-t border-gray-700 pt-4">
                 <label class="block text-xs font-semibold text-gray-400 uppercase mb-2">Daftar Link Video</label>
+                
                 <div id="video-inputs-container" class="space-y-3">
                     <div class="flex gap-2 video-input-row">
                         <input type="url" placeholder="https://domain.com/video1.mp4" 
@@ -31,7 +32,7 @@
                     </div>
                 </div>
                 
-                <button type="button" id="add-more-btn" class="mt-3 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                <button type="button" id="add-more-btn" class="mt-3 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 py-1 px-2 rounded hover:bg-gray-700/50">
                     ➕ Tambah Video Lagi
                 </button>
             </div>
@@ -68,15 +69,28 @@
         const resultLink = document.getElementById('result-link');
         const shareUrlInput = document.getElementById('share-url');
 
-        // Fungsi tambah kolom input baru saat tombol "+ Tambah Video Lagi" diklik
-        addMoreBtn.addEventListener('click', () => {
+        // Fungsi Tambah Input Video (Diperbaiki agar murni menggunakan fungsi JS)
+        addMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah form reload tidak sengaja
+            
             const newRow = document.createElement('div');
             newRow.className = 'flex gap-2 video-input-row';
-            newRow.innerHTML = `
-                <input type="url" placeholder="https://domain.com/video-berikutnya.mp4" 
-                    class="w-full bg-gray-700 text-sm text-gray-100 p-2.5 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 transition-colors url-input">
-                <button type="button" onclick="this.parentElement.remove()" class="bg-red-900/40 hover:bg-red-900 text-red-400 p-2.5 rounded-lg border border-red-700/50 text-xs font-bold transition-all">Hapus</button>
-            `;
+            
+            const newInput = document.createElement('input');
+            newInput.type = 'url';
+            newInput.placeholder = 'https://domain.com/video-berikutnya.mp4';
+            newInput.className = 'w-full bg-gray-700 text-sm text-gray-100 p-2.5 rounded-lg border border-gray-600 focus:outline-none focus:border-blue-500 transition-colors url-input';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'bg-red-950/40 hover:bg-red-900 text-red-400 p-2.5 rounded-lg border border-red-700/50 text-xs font-bold transition-all';
+            deleteBtn.textContent = 'Hapus';
+            deleteBtn.addEventListener('click', () => {
+                newRow.remove();
+            });
+
+            newRow.appendChild(newInput);
+            newRow.appendChild(deleteBtn);
             videoInputsContainer.appendChild(newRow);
         });
 
@@ -89,15 +103,21 @@
             return result;
         }
 
-        saveBtn.addEventListener('click', async () => {
-            const folderTitle = folderTitleInput.value.trim();
+        // Fungsi Simpan / Generate
+        saveBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
             
-            // Mengambil semua value dari input link yang ada
+            const folderTitle = folderTitleInput.value.trim();
             const inputElements = document.querySelectorAll('.url-input');
             const videoUrls = Array.from(inputElements).map(input => input.value.trim()).filter(url => url !== "");
 
-            if (!folderTitle || videoUrls.length === 0) {
-                return alert('Harap isi judul folder dan minimal satu link video!');
+            if (!folderTitle) {
+                alert('Harap isi nama folder koleksi!');
+                return;
+            }
+            if (videoUrls.length === 0) {
+                alert('Harap masukkan minimal satu link video!');
+                return;
             }
 
             saveBtn.disabled = true;
@@ -108,7 +128,7 @@
             try {
                 const randomSlug = makeRandomSlug(6);
 
-                // 1. Simpan data folder utama ke video_packages
+                // 1. Simpan folder
                 const { data: packageData, error: packageError } = await supabase
                     .from('video_packages')
                     .insert([{ title: folderTitle, slug: randomSlug }])
@@ -117,9 +137,9 @@
 
                 if (packageError) throw packageError;
 
-                statusText.textContent = `Menyimpan ${videoUrls.length} link video ke dalam folder...`;
+                statusText.textContent = `Menyimpan ${videoUrls.length} link video ke database...`;
 
-                // 2. Siapkan data array untuk dimasukkan massal (bulk insert) ke video_items
+                // 2. Siapkan array data video
                 const itemsToInsert = videoUrls.map(url => ({
                     package_id: packageData.id,
                     video_url: url
