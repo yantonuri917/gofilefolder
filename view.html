@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
-    <!-- PROTEKSI KEAMANAN: Mencegah halaman disisipkan ke iframe situs asing (Anti-Clickjacking) -->
+    
     <meta http-equiv="X-Frame-Options" content="DENY">
     <title>Gofile - Folder View</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* PROTEKSI UI: Mencegah pengguna memblok/menyorot teks atau gambar di dalam web */
+       
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -21,18 +21,18 @@
         }
     </style>
 </head>
-<!-- PROTEKSI KEAMANAN: Mematikan fungsi klik kanan di seluruh area halaman web -->
+
 <body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6" oncontextmenu="return false;">
 
-    <!-- Wadah Konten Utama Gofile (Iklan atas akan disuntikkan tepat di atas div ini secara otomatis lewat skrip) -->
+   
     <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-2 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
             <div class="flex items-start gap-3">
                 <span class="text-3xl text-yellow-500 mt-1"><i class="fa-solid fa-folder"></i></span>
                 <div class="min-w-0 flex-1">
-                    <h2 id="folder-title-display" class="text-base font-bold text-gray-100 tracking-wide truncate">Memuat info folder...</h2>
-                    <p id="folder-date" class="text-[11px] text-gray-500 mt-0.5">Menghubungkan...</p>
+                    <h2 id="folder-title-display" class="text-base font-bold text-gray-100 tracking-wide truncate">loading info folder...</h2>
+                    <p id="folder-date" class="text-[11px] text-gray-500 mt-0.5">loading...</p>
                     <div class="flex gap-2 mt-2">
                         <span class="text-[10px] bg-gray-800/80 text-emerald-400 px-2 py-0.5 rounded border border-gray-700/50 flex items-center gap-1">
                             <i class="fa-solid fa-earth-asia text-[9px]"></i> public
@@ -47,7 +47,7 @@
 
         <div id="files-feed-container" class="space-y-0 divide-y divide-gray-800/70">
             <div class="text-center py-12 text-xs text-yellow-500 animate-pulse">
-                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat isi berkas Gofile...
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> loading...
             </div>
         </div>
 
