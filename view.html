@@ -20,14 +20,18 @@
         }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[100px] sm:pt-[105px]" oncontextmenu="return false;">
+<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[105px]" oncontextmenu="return false;">
 
-    <div class="w-full max-w-[320px] mx-auto my-0 text-center overflow-hidden h-[85px] flex items-center justify-center scale-75 origin-top">
-        <script async="async" data-cfasync="false" src="https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js"></script>
-        <div id="container-122b006ae61ef549a738f7e587027d5a" class="w-full"></div>
+    <div class="fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1 border-b border-gray-800/50 z-50 shadow-lg min-h-[95px] overflow-hidden">
+        <iframe src="https://braverybreezebinding.com/watchnew?key=64e783bd557c30cbf66293b5c5fda05f" width="728" height="90" frameborder="0" scrolling="no" style="border:none; overflow:hidden;"></iframe>
     </div>
 
-    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 -mt-2 overflow-hidden">
+    <div class="w-[200px] h-[100px] mx-auto my-0 text-center overflow-hidden flex items-center justify-center bg-transparent">
+        <script async="async" data-cfasync="false" src="https://braverybreezebinding.com/122b006ae61ef549a738f7e587027d5a/invoke.js"></script>
+        <div id="container-122b006ae61ef549a738f7e587027d5a" class="w-full h-full"></div>
+    </div>
+
+    <div class="max-w-3xl w-full bg-[#111827] rounded-xl p-4 sm:p-5 shadow-2xl border border-gray-800/80 mt-1 overflow-hidden">
         
         <div class="border-b border-gray-800 pb-4 mb-4">
             <div class="flex items-start gap-3">
@@ -85,27 +89,6 @@
                 return false;
             }
         });
-
-        // SKRIP UTAMA IKLAN STICKY ATAS (728x90 melayang di layar terdepan)
-        function pasangIklanStickyAtas() {
-            window.atOptions = {
-                'key' : '64e783bd557c30cbf66293b5c5fda05f',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
-            };
-
-            const wadahSticky = document.createElement('div');
-            wadahSticky.className = "fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1 border-b border-gray-800/50 z-50 shadow-lg min-h-[95px] overflow-hidden";
-
-            const scriptIklan = document.createElement('script');
-            scriptIklan.type = "text/javascript";
-            scriptIklan.src = "https://braverybreezebinding.com/64e783bd557c30cbf66293b5c5fda05f/invoke.js";
-
-            wadahSticky.appendChild(scriptIklan);
-            document.body.insertBefore(wadahSticky, document.body.firstChild);
-        }
 
         async function loadGofileFeed() {
             if (!videoSlug || videoSlug === 'view.html') {
@@ -218,6 +201,7 @@
             }
         }
 
+        /* Fungsi Pemutar bawaan di bawahnya tetap sama tanpa perubahan */
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
                 const thumbnailUrl = url.includes('#t=') ? url : `${url}#t=5`;
@@ -307,11 +291,8 @@
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
-        // Jalankan pasang iklan sticky dan muat data Supabase
-        pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
-
     <!-- Histats -->
 <script type="text/javascript">
 var _Hasync= _Hasync|| [];
