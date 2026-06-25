@@ -4,17 +4,16 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script type="text/javascript">
-        // Mengambil path dan query string saat ini
-        var pathSegmentsToKeep = 0; // Ubah ke 1 jika menggunakan GitHub Project Page (domain.github.io/nama-repo)
-
-        var l = window.location;
-        l.replace(
-            l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-            l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p=' +
-            l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-            (l.search ? '&' + l.search.replace(/&/g, '~and~') : '') +
-            l.hash
-        );
+        // Ambil jalur URL yang diakses (misal: /r06cQQ atau /d/r06cQQ)
+        var pathSegments = window.location.pathname.split('/').filter(Boolean);
+        
+        if (pathSegments.length > 0) {
+            // Simpan path asli ke dalam sessionStorage sebelum dialihkan
+            sessionStorage.setItem('redirect_path', window.location.pathname + window.location.search);
+        }
+        
+        // Alihkan secara diam-diam kembali ke halaman utama (index.html) tanpa query string di URL
+        window.location.replace(window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''));
     </script>
 </head>
 <body>
