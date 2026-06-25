@@ -3,15 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <script type="text/javascript">
+    (function(l) {
+        if (l.search[1] === 'p') {
+            var decoded = l.search.slice(1).split('&').map(function(s) {
+                return s.replace(/~and~/g, '&')
+            }).filter(function(v) {
+                return v.indexOf('p=') === 0
+            })[0];
+            if (decoded) {
+                var path = decoded.split('=')[1];
+                // Memastikan tidak ada double slash atau slash berlebih di awal path
+                if (path.charAt(0) === '/') {
+                    path = path.slice(1);
+                }
+                var q = l.search.indexOf('&') !== -1 ? l.search.slice(l.search.indexOf('&')) : '';
+                
+                // Ubah address bar kembali ke URL bersih (domain.com/slug) tanpa reload
+                window.history.replaceState(null, null, l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + '/' + path + q + l.hash);
+            }
+        }
+    }(window.location));
+    </script>
+
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <title>Gofile - Folder View</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* PROTEKSI UI: Mencegah pengguna memblok/menyorot teks atau gambar di dalam web */
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -19,8 +43,7 @@
             user-select: none;
         }
     </style>
-</head>
-<body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[115px]" oncontextmenu="return false;">
+</head><body class="bg-[#0b0f19] text-gray-200 min-h-screen flex flex-col items-center p-3 sm:p-6 pt-[115px]" oncontextmenu="return false;">
 
     <div class="fixed top-0 left-0 right-0 w-full flex justify-center bg-[#0b0f19]/90 py-1.5 border-b border-gray-800/40 z-50 shadow-xl min-h-[105px]">
         <div id="wadah-iklan-native-sticky" class="w-[100px] h-[100px] text-center overflow-hidden flex items-center justify-center bg-transparent"></div>
