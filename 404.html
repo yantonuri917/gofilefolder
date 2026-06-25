@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<script>
-  // semua /abcd diarahkan ke index.html TANPA reload
-  var path = location.pathname;
-  location.replace("/#" + path);
-</script>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script type="text/javascript">
+        // Mengambil path dan query string saat ini
+        var pathSegmentsToKeep = 0; // Ubah ke 1 jika menggunakan GitHub Project Page (domain.github.io/nama-repo)
+
+        var l = window.location;
+        l.replace(
+            l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+            l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p=' +
+            l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+            (l.search ? '&' + l.search.replace(/&/g, '~and~') : '') +
+            l.hash
+        );
+    </script>
 </head>
-<body></body>
+<body>
+</body>
 </html>
