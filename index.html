@@ -62,19 +62,38 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // DETEKSI MULTI-FORMAT SLUG
-        let videoSlug = "";
-        const urlParams = new URLSearchParams(window.location.search);
+        // --- MANAJEMEN ROUTER & PEMULIHAN URL ASLI TANPA TERLIHAT PENGGUNA ---
+        let targetPath = window.location.pathname;
+        
+        // Ambil data redirect dari sessionStorage (jika dikirim oleh 404.html)
+        const storedPath = sessionStorage.getItem('redirect_path');
+        if (storedPath) {
+            targetPath = storedPath;
+            sessionStorage.removeItem('redirect_path'); // Hapus cache agar tidak looping
+            
+            // Trik Inti: Ganti URL di browser kembali ke format asli (Tanpa ?p=)
+            window.history.replaceState(null, null, targetPath);
+        }
 
-        if (urlParams.has('p')) {
-            videoSlug = urlParams.get('p');
-        } else {
-            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        // Ekstrak slug dari targetPath asli/pemulihan
+        let videoSlug = "";
+        const cleanPathOnly = targetPath.split('?')[0];
+        const pathSegments = cleanPathOnly.split('/').filter(Boolean);
+
+        if (pathSegments.length > 0) {
             if (pathSegments[0] === 'd') {
-                videoSlug = pathSegments[1];
+                videoSlug = pathSegments[1]; // Untuk format domain.com/d/slug
             } else {
-                videoSlug = pathSegments.pop();
+                videoSlug = pathSegments[pathSegments.length - 1]; // Untuk format domain.com/slug
             }
+        } else {
+            // Backup fallback jika masih ada yang menggunakan link model lama dengan parameter query
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('p')) videoSlug = urlParams.get('p');
+        }
+
+        if (videoSlug) {
+            videoSlug = videoSlug.replace('.html', '');
         }
 
         const folderTitleDisplay = document.getElementById('folder-title-display');
@@ -98,12 +117,11 @@
             }
         });
 
-        // --- SOLUSI EMULASI SCRIPT IKLAN STICKY ATAS (728x90) ---
+        // FUNGSI PASANG IKLAN STICKY ATAS (728x90) MURNI DI SCRIPT
         function pasangIklanStickyAtas() {
             const wadah = document.getElementById('wadah-iklan-sticky-atas');
             if (!wadah) return;
 
-            // Membuat iframe bayangan agar parameter atOptions langsung dieksekusi secara terisolasi tanpa delay browser
             const iframe = document.createElement('iframe');
             iframe.width = "728";
             iframe.height = "90";
@@ -114,7 +132,6 @@
             
             wadah.appendChild(iframe);
 
-            // Tulis kode dokumen iklan langsung ke dalam objek iframe lewat script
             const doc = iframe.contentDocument || iframe.contentWindow.document;
             doc.open();
             doc.write(`
@@ -255,7 +272,6 @@
 
                     filesFeedContainer.appendChild(card);
 
-                    // SUNTIK DUA IKLAN SELA KONTANER DI LIST FEED VIDEO
                     if (index === 0) {
                         suntikIklanKontainer(filesFeedContainer, "container-93737c813e604544d6d8768c743712d8", "https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js");
                     }
@@ -284,26 +300,17 @@
             }
         }
 
+        // ... Sisa fungsi event handler lainnya (playVideo, closeVideo, dll.) tetap sama ...
         function handleThumbnailClick(e, id, title) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); e.stopPropagation();
             const btn = document.getElementById('play-btn-' + id);
-            if (btn.getAttribute('data-status') !== 'playing') {
-                playVideo(id, title);
-            }
+            if (btn.getAttribute('data-status') !== 'playing') playVideo(id, title);
         }
 
         function handleButtonClick(e, id, title) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); e.stopPropagation();
             const btn = document.getElementById('play-btn-' + id);
-            const currentStatus = btn.getAttribute('data-status');
-            
-            if (currentStatus === 'playing') {
-                closeVideo(id);
-            } else {
-                playVideo(id, title);
-            }
+            if (btn.getAttribute('data-status') === 'playing') closeVideo(id); else playVideo(id, title);
         }
 
         function playVideo(id, title) {
@@ -317,8 +324,6 @@
             btn.className = "w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white border border-red-500 flex items-center justify-center text-xs shadow-md";
 
             miniBox.style.setProperty('display', 'none', 'important'); 
-            bigPlayerZone.classList.remove('hidden'); 
-
             bigPlayerZone.className = "w-full hidden mt-3 bg-black border border-gray-800 shadow-2xl rounded-lg overflow-hidden flex justify-center items-center h-auto";
             bigPlayerZone.classList.remove('hidden');
 
@@ -333,41 +338,25 @@
                 embed += embed.includes('?') ? "&autoplay=1" : "?autoplay=1";
                 bigPlayerZone.innerHTML = `<iframe src="${embed}" class="w-full h-full" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
             } else {
-                bigPlayerZone.innerHTML = `
-                    <div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4">
-                        <p class="text-[11px] text-gray-400 mb-2">${title}</p>
-                        <a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a>
-                    </div>`;
+                bigPlayerZone.innerHTML = `<div class="w-full h-full min-h-[200px] flex flex-col items-center justify-center bg-gray-900 p-4"><p class="text-[11px] text-gray-400 mb-2">${title}</p><a href="${fileUrl}" target="_blank" class="bg-blue-600 text-white text-[10px] py-1.5 px-3 rounded font-bold">Buka Sumber</a></div>`;
             }
-
-            setTimeout(() => {
-                bigPlayerZone.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }, 150);
+            setTimeout(() => { bigPlayerZone.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
         }
 
         function closeVideo(id) {
             const btn = document.getElementById('play-btn-' + id);
             const miniBox = document.getElementById('mini-viewport-' + id);
             const bigPlayerZone = document.getElementById('expanded-zone-' + id);
-
-            bigPlayerZone.innerHTML = ""; 
-            bigPlayerZone.classList.add('hidden'); 
-
-            btn.setAttribute('data-status', 'paused');
-            btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
+            bigPlayerZone.innerHTML = ""; bigPlayerZone.classList.add('hidden'); 
+            btn.setAttribute('data-status', 'paused'); btn.innerHTML = `<i class="fa-solid fa-play"></i>`; 
             btn.className = "w-8 h-8 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/80 flex items-center justify-center text-xs";
-            
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
-        // Eksekusi skrip pemanggilan iklan dan database
         pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
-    <script type="text/javascript">
+   <script type="text/javascript">
         var _Hasync= _Hasync|| [];
         _Hasync.push(['Histats.start', '1,4971849,4,0,0,0,00010000']);
         _Hasync.push(['Histats.fasi', '1']);
