@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <script type="text/javascript">
+    (function(l) {
+        if (l.search[1] === 'p') {
+            var decoded = l.search.slice(1).split('&').map(function(s) {
+                return s.replace(/~and~/g, '&')
+            }).filter(function(v) {
+                return v.indexOf('p=') === 0
+            })[0];
+            if (decoded) {
+                var path = decoded.split('=')[1];
+                if (path.charAt(0) === '/') {
+                    path = path.slice(1);
+                }
+                var q = l.search.indexOf('&') !== -1 ? l.search.slice(l.search.indexOf('&')) : '';
+                window.history.replaceState(null, null, l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + '/' + path + q + l.hash);
+            }
+        }
+    }(window.location));
+    </script>
+
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <title>Gofile - Folder View</title>
@@ -59,15 +79,12 @@
         const SUPABASE_URL = "https://ehhrvswzhirrnrqxmxae.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
         
-        // Inisialisasi Klien Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // URL Redirect Download
         const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
 
-        // Mengambil slug dari parameter URL '?id=nama-slug'
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoSlug = urlParams.get('id');
+        // --- DETEKSI SLUG DENGAN AMAN UNTUK GITHUB PAGES ---
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const videoSlug = pathSegments.pop();
 
         // DOM Elements
         const folderTitleDisplay = document.getElementById('folder-title-display');
@@ -88,9 +105,10 @@
 
         // Fungsi Utama Fetch Data Feed Gofile
         async function loadGofileFeed() {
-            if (!videoSlug) {
+            // Validasi jika slug kosong atau mengarah ke index.html utama
+            if (!videoSlug || videoSlug === "index.html") {
                 folderTitleDisplay.textContent = "Error: Link Tidak Valid";
-                filesFeedContainer.innerHTML = '<p class="text-red-400 text-xs text-center py-4">Parameter ID slug hilang atau tidak valid.</p>';
+                filesFeedContainer.innerHTML = '<p class="text-red-400 text-xs text-center py-4">Silakan masukkan slug folder pada URL Anda. (Contoh: domain.com/slug-kamu)</p>';
                 return;
             }
 
@@ -143,15 +161,13 @@
                         fileName = `YouTube_Stream_Part_${index + 1}.mp4`;
                     }
 
-                    // Estimasi Ukuran File Palsu & Total Download Acak (Sesuai kode bawaan Anda)
+                    // Estimasi Ukuran File Palsu & Total Download Acak
                     const fakeSize = ((index + 2) * 21.4).toFixed(1) + " MB";
                     const fakeDownloads = Math.floor(Math.random() * (50000 - 1000 + 1)) + 1000;
 
-                    // Buat Baris Item Element Baru
                     const rowDiv = document.createElement('div');
                     rowDiv.className = "py-4 flex flex-col w-full";
 
-                    // Template HTML Struktur List File Gofile
                     rowDiv.innerHTML = `
                         <div class="flex items-start justify-between w-full gap-3">
                             <div class="flex items-center gap-2 flex-shrink-0 mt-1">
@@ -185,7 +201,7 @@
 
                     filesFeedContainer.appendChild(rowDiv);
 
-                    // --- BLOCK SUNTIK IKLAN NATIVE (Opsi Jika Ingin Diaktifkan) ---
+                    // Block Iklan Native
                     if (index === 0) {
                         suntikIklanKontainer(filesFeedContainer, "container-93737c813e604544d6d8768c743712d8", "https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js");
                     }
@@ -200,7 +216,6 @@
             }
         }
 
-        // Pembantu Render Preview Thumbnail Video/Youtube
         function renderThumbnailPlayer(url) {
             if (url.match(/\.(mp4|webm|ogg)/i) || url.includes('supabase.co/storage')) {
                 const cleanSrc = url.split('#')[0] + '#t=5';
@@ -227,15 +242,13 @@
             e.preventDefault();
             e.stopPropagation();
             const playBtn = document.getElementById('play-btn-' + id);
-            const status = playBtn.getAttribute('data-status');
-            if (status === 'playing') {
+            if (playBtn.getAttribute('data-status') === 'playing') {
                 closeVideo(id);
             } else {
                 playVideo(id);
             }
         }
 
-        // Fungsi Memutar Video (Buka Ekspansi Layar Lebar)
         function playVideo(id) {
             const playBtn = document.getElementById('play-btn-' + id);
             const miniViewport = document.getElementById('mini-viewport-' + id);
@@ -265,7 +278,6 @@
             }, 150);
         }
 
-        // Fungsi Menutup Video (Kembali ke Bentuk Semula)
         function closeVideo(id) {
             const playBtn = document.getElementById('play-btn-' + id);
             const miniViewport = document.getElementById('mini-viewport-' + id);
@@ -281,26 +293,21 @@
             miniViewport.style.setProperty('display', 'block', 'important');
         }
 
-        // Script Suntik Wadah Iklan Pembantu
         function suntikIklanKontainer(parent, containerId, scriptSrc) {
             var wadah = document.createElement('div');
             wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
-            
             var inner = document.createElement('div');
             inner.id = containerId;
             inner.className = "w-full flex items-center justify-center bg-transparent min-h-[100px]";
-            
             var script = document.createElement('script');
             script.src = scriptSrc;
             script.async = true;
             script.dataset.cfasync = "false";
-            
             wadah.appendChild(inner);
             wadah.appendChild(script);
             parent.appendChild(wadah);
         }
 
-        // Menjalankan Skrip Otomatis
         loadGofileFeed();   
     </script>
 
@@ -315,7 +322,5 @@
             (document.head || document.body).appendChild(hs);
         })();
     </script>
-    <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4971849&101" alt="counter" border="0"></a></noscript>
-
 </body>
 </html>
