@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <title>Gofile watch</title>
+    <title>Gofile - Folder View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -58,7 +58,70 @@
     </div>
 
     <script>
-       f66293b5c5fda05f',
+        const SUPABASE_URL = "https://ehhrvswzhirrnrqxmxae.supabase.co"; 
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoaHJ2c3d6aGlycm5ycXhteGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjg2NDcsImV4cCI6MjA5NTgwNDY0N30.75vZs3Rn6j7YSlInHpGDN39OGjhywcEBv8j-hawyOlY";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DETEKSI MULTI-FORMAT SLUG
+        let videoSlug = "";
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('p')) {
+            videoSlug = urlParams.get('p');
+        } else {
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            if (pathSegments[0] === 'd') {
+                videoSlug = pathSegments[1];
+            } else {
+                videoSlug = pathSegments.pop();
+            }
+        }
+
+        const folderTitleDisplay = document.getElementById('folder-title-display');
+        const folderDate = document.getElementById('folder-date');
+        const filesFeedContainer = document.getElementById('files-feed-container');
+        const fileCountSpan = document.getElementById('file-count');
+        const totalItemsFooter = document.getElementById('total-items-footer');
+
+        let videoUrlsCache = {};
+        const DOWNLOAD_REDIRECT_URL = "https://braverybreezebinding.com/dyu6kzr44?key=703bc4908bfdd21b148e4fe03f9810cb";
+
+        // PROTEKSI KEYBOARD
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+                (e.ctrlKey && e.key === 'u')
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // --- SOLUSI EMULASI SCRIPT IKLAN STICKY ATAS (728x90) ---
+        function pasangIklanStickyAtas() {
+            const wadah = document.getElementById('wadah-iklan-sticky-atas');
+            if (!wadah) return;
+
+            // Membuat iframe bayangan agar parameter atOptions langsung dieksekusi secara terisolasi tanpa delay browser
+            const iframe = document.createElement('iframe');
+            iframe.width = "728";
+            iframe.height = "90";
+            iframe.frameBorder = "0";
+            iframe.scrolling = "no";
+            iframe.style.border = "none";
+            iframe.style.overflow = "hidden";
+            
+            wadah.appendChild(iframe);
+
+            // Tulis kode dokumen iklan langsung ke dalam objek iframe lewat script
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(`
+                <body style="margin:0;padding:0;background:transparent;display:flex;justify-content:center;align-items:center;">
+                    <script type="text/javascript">
+                        var atOptions = {
+                            'key' : '64e783bd557c30cbf66293b5c5fda05f',
                             'format' : 'iframe',
                             'height' : 90,
                             'width' : 728,
@@ -71,7 +134,7 @@
             doc.close();
         }
 
-        
+        // FUNGSI SUNTIK IKLAN SELA KONTANER DI LIST VIDEO
         function suntikIklanKontainer(parent, containerId, scriptSrc) {
             var wadah = document.createElement('div');
             wadah.className = "py-4 flex justify-center border-b border-gray-800/40";
@@ -192,6 +255,7 @@
 
                     filesFeedContainer.appendChild(card);
 
+                    // SUNTIK DUA IKLAN SELA KONTANER DI LIST FEED VIDEO
                     if (index === 0) {
                         suntikIklanKontainer(filesFeedContainer, "container-93737c813e604544d6d8768c743712d8", "https://braverybreezebinding.com/93737c813e604544d6d8768c743712d8/invoke.js");
                     }
@@ -299,6 +363,7 @@
             miniBox.style.setProperty('display', 'block', 'important'); 
         }
 
+        // Eksekusi skrip pemanggilan iklan dan database
         pasangIklanStickyAtas();
         loadGofileFeed();
     </script>
